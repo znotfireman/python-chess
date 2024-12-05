@@ -87,12 +87,16 @@ class Position:
 
         return Position(row, collumn)
 
-def is_valid_piece(board, piece_position, color):
+def piece_from_position(board, piece_position, color):
     assert isinstance(piece_position, Position)
 
     row = board[piece_position.row]
 
-    return True
+    if len(row) < piece_position.collumn:
+        return None
+
+    piece = row[piece_position.collumn]
+    return piece if isinstance(piece, Piece) and (not isinstance(color, ChessColor) or piece.piece_color == color) else None
 
 def is_valid_move(board, piece_position, to_position):
     assert isinstance(piece_position, Position)
@@ -130,7 +134,7 @@ def render_board(board):
 
     collumn_labels = ""
     for col in COLLUMNS:
-        collumn_labels += col.upper() + "   "
+        collumn_labels += "   " + col.upper()
 
     output += f"  {collumn_labels}\n"
     print(output)
@@ -202,10 +206,22 @@ if __name__ == "__main__":
         render_board(board)
         print(f"now {current_turn.into_str()}"'s turn')
 
-        piece_position = Position.from_str(input("input piece (eg. a1) to move: "))
-        move_to = Position.from_str(input("input position to move to: "))
+        piece_position = None
+        target_piece = None
 
-        print(piece_position.row, piece_position.collumn)
+        # TODO check for no possible moves
+        while target_piece == None:
+            piece_position = Position.from_str(input("input piece (eg. a1) to move: "))
+            target_piece = piece_from_position(board, piece_position, current_turn)
+
+            if not target_piece:
+                print("invalid piece")
+            else:
+                break
+
+        move_to = Position.from_str(input("input position (eg. a1) to move piece: "))
+
+        print(target_piece.piece_type, target_piece.piece_color)
         print(move_to.row, move_to.collumn)
 
         current_turn = ChessColor.BLACK if current_turn == ChessColor.WHITE else ChessColor.WHITE
